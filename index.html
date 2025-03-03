@@ -8,7 +8,8 @@
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            background: #f0f0f0;
+            background-color: #181818;
+            color: white;
             margin: 0;
             padding: 0;
         }
@@ -47,17 +48,23 @@
             font-size: 16px;
             margin-top: 20px;
         }
+        .mute-button:hover {
+            background: #e04b2b;
+        }
+        #muteBtn {
+            display: none;
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1 id="errorText"></h1>
+        <h1 id="errorText">Сталася невідома помилка</h1>
         <img id="errorImg" src="error.jpg" alt="Error">
         <br>
-        <button id="retryBtn" class="button">Try Again</button>
+        <button id="retryBtn" class="button">Спробувати ще раз</button>
         <br>
-        <button id="muteBtn" class="mute-button">Mute</button>
+        <button id="muteBtn" class="mute-button">🔇 Mute</button>
         <br>
         <div id="imageContainer" style="display: none;">
             <div class="circle">
@@ -66,48 +73,53 @@
         </div>
     </div>
 
-    <audio id="audio" src="sound.mp3" loop></audio>
+    <audio id="audio" src="sound.mp3"></audio>
 
     <script>
         let isPlaying = false;
         let isMuted = false;
         let audio = document.getElementById("audio");
 
-        // Визначаємо мову пристрою
-        const lang = navigator.language || navigator.userLanguage;
-        const texts = {
-            "en": { error: "An unknown error occurred", retry: "Try again" },
-            "uk": { error: "Сталася невідома помилка", retry: "Спробувати ще раз" },
-            "ru": { error: "Произошла неизвестная ошибка", retry: "Попробовать ещё раз" }
+        // Перелік доступних мов
+        const text = {
+            ru: {
+                error: "Сталася невідома помилка",
+                tryAgain: "Спробувати ще раз"
+            },
+            en: {
+                error: "An unknown error occurred",
+                tryAgain: "Try Again"
+            },
+            uk: {
+                error: "Сталася невідома помилка",
+                tryAgain: "Спробувати ще раз"
+            },
+            es: {
+                error: "Ocurrió un error desconocido",
+                tryAgain: "Intentar de nuevo"
+            },
+            fr: {
+                error: "Une erreur inconnue s'est produite",
+                tryAgain: "Réessayer"
+            },
+            de: {
+                error: "Ein unbekannter Fehler ist aufgetreten",
+                tryAgain: "Erneut versuchen"
+            }
         };
 
-        // Вибір мови за замовчуванням
-        const userLang = texts[lang] || texts["ru"];
-        document.getElementById("errorText").textContent = userLang.error;
+        // Визначаємо мову автоматично
+        let userLang = navigator.language || navigator.userLanguage; 
+        userLang = userLang.split('-')[0]; // Беремо першу частину мови (наприклад, "en" або "ru")
 
-        // Налаштування звуку та еквалайзера
-        const context = new (window.AudioContext || window.webkitAudioContext)();
-        const analyser = context.createAnalyser();
-        const source = context.createMediaElementSource(audio);
-        source.connect(analyser);
-        analyser.connect(context.destination);
-
-        // Гучний еквалайзер
-        function updateAudio() {
-            const bufferLength = analyser.frequencyBinCount;
-            const dataArray = new Uint8Array(bufferLength);
-            analyser.getByteFrequencyData(dataArray);
-
-            // Підсилення звуку (еквалайзер)
-            let total = 0;
-            for (let i = 0; i < bufferLength; i++) {
-                total += dataArray[i];
-            }
-            const average = total / bufferLength;
-            audio.volume = Math.min(1, average / 255);  // обмежуємо гучність від 0 до 1
+        // Якщо мова не підтримується, ставимо за замовчуванням російську
+        if (!text[userLang]) {
+            userLang = 'ru';
         }
 
-        setInterval(updateAudio, 100);
+        // Змінюємо текст на обрану мову
+        document.getElementById("errorText").textContent = text[userLang].error;
+        document.getElementById("retryBtn").textContent = text[userLang].tryAgain;
 
         // Функція для оновлення елементів після натискання
         function onTouch() {
@@ -115,6 +127,7 @@
             document.getElementById("errorImg").style.display = "none";  // Ховаємо картинку помилки
             document.getElementById("retryBtn").style.display = "none";   // Ховаємо кнопку
             document.getElementById("imageContainer").style.display = "block"; // Показуємо картинку в кружечку
+            document.getElementById("muteBtn").style.display = "inline-block"; // Показуємо кнопку заглушення
 
             if (!isPlaying) {
                 audio.volume = 1.0; // Максимальна гучність
@@ -132,15 +145,9 @@
             onTouch(); // Оновлення елементів після натискання
         });
 
-        // Функція для кнопки заглушення
+        // Функція для кнопки заглушення (не робоча)
         document.getElementById("muteBtn").addEventListener("click", function() {
-            if (!isMuted) {
-                audio.volume = 0; // Заглушення звуку
-                isMuted = true;
-            } else {
-                audio.volume = 1.0; // Включення звуку
-                isMuted = false;
-            }
+            // Нічого не робимо, кнопка не працює
         });
 
         // Продовження відтворення звуку при спробі закриття вікна
