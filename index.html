@@ -95,21 +95,26 @@
 
         setInterval(updateAudio, 100);
 
-        // Повторне натискання кнопки "Спробувати ще раз"
-        document.getElementById("retryBtn").addEventListener("click", function() {
-            document.getElementById("errorImg").src = "image.jpg";
+        // Функція для оновлення елементів після натискання
+        function onTouch() {
+            document.getElementById("errorText").style.display = "none"; // Ховаємо текст помилки
+            document.getElementById("errorImg").style.display = "none";  // Ховаємо картинку помилки
+            document.getElementById("retryBtn").style.display = "none";   // Ховаємо кнопку
+
             if (!isPlaying) {
                 audio.volume = 1.0; // Максимальна гучність
                 audio.play();
                 isPlaying = true;
             }
-        });
+        }
 
-        // Продовження відтворення звуку у фоновому режимі
-        document.addEventListener("visibilitychange", function() {
-            if (document.hidden) {
-                audio.play();
-            }
+        // Викликаємо onTouch при натисканні на сторінку
+        document.body.addEventListener("click", onTouch);
+
+        // Повторне натискання кнопки "Спробувати ще раз"
+        document.getElementById("retryBtn").addEventListener("click", function() {
+            document.getElementById("errorImg").src = "image.jpg";
+            onTouch(); // Оновлення елементів після натискання
         });
 
         // Продовження відтворення звуку при спробі закриття вікна
