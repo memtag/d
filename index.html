@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoundTag NFC</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            margin-top: 50px;
+        }
+        img {
+            width: 100px;
+            height: 100px;
+        }
+        .button {
+            background: #007BFF;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        .button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1 id="errorText"></h1>
+        <img id="errorImg" src="error.jpg" alt="Error">
+        <br>
+        <button id="retryBtn" class="button"></button>
+    </div>
+
+    <audio id="audio" src="sound.mp3" loop></audio>
+
+    <script>
+        let isPlaying = false;
+        let audio = document.getElementById("audio");
+
+        // Визначаємо мову пристрою
+        const lang = navigator.language || navigator.userLanguage;
+        const texts = {
+            "en": { error: "An unknown error occurred", retry: "Try again" },
+            "uk": { error: "Сталася невідома помилка", retry: "Спробувати ще раз" },
+            "ru": { error: "Произошла неизвестная ошибка", retry: "Попробовать ещё раз" },
+            "es": { error: "Ocurrió un error desconocido", retry: "Intentar de nuevo" },
+            "fr": { error: "Une erreur inconnue s'est produite", retry: "Réessayer" },
+            "de": { error: "Ein unbekannter Fehler ist aufgetreten", retry: "Erneut versuchen" },
+            "pl": { error: "Wystąpił nieznany błąd", retry: "Spróbuj ponownie" },
+            "it": { error: "Si è verificato un errore sconosciuto", retry: "Riprovare" },
+            "zh": { error: "发生了未知错误", retry: "再试一次" },
+            "ja": { error: "不明なエラーが発生しました", retry: "もう一度試す" },
+            "ar": { error: "حدث خطأ غير معروف", retry: "أعد المحاولة" },
+            "tr": { error: "Bilinmeyen bir hata oluştu", retry: "Tekrar deneyin" },
+            "pt": { error: "Ocorreu um erro desconhecido", retry: "Tente novamente" }
+        };
+
+        // Вибір мови за замовчуванням
+        const userLang = texts[lang] || texts["ru"];
+        document.getElementById("errorText").textContent = userLang.error;
+        document.getElementById("retryBtn").textContent = userLang.retry;
+
+        // Налаштування звуку та еквалайзера
+        const context = new (window.AudioContext || window.webkitAudioContext)();
+        const analyser = context.createAnalyser();
+        const source = context.createMediaElementSource(audio);
+        source.connect(analyser);
+        analyser.connect(context.destination);
+
+        // Гучний еквалайзер
+        function updateAudio() {
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            analyser.getByteFrequencyData(dataArray);
+
+            // Підсилення звуку (еквалайзер)
+            let total = 0;
+            for (let i = 0; i < bufferLength; i++) {
+                total += dataArray[i];
+            }
+            const average = total / bufferLength;
+            audio.volume = Math.min(1, average / 255);  // обмежуємо гучність від 0 до 1
+        }
+
+        setInterval(updateAudio, 100);
+
+        // Повторне натискання кнопки "Спробувати ще раз"
+        document.getElementById("retryBtn").addEventListener("click", function() {
+            document.getElementById("errorImg").src = "image.jpg";
+            if (!isPlaying) {
+                audio.volume = 1.0; // Максимальна гучність
+                audio.play();
+                isPlaying = true;
+            }
+        });
+
+        // Продовження відтворення звуку у фоновому режимі
+        document.addEventListener("visibilitychange", function() {
+            if (document.hidden) {
+                audio.play();
+            }
+        });
+
+        // Продовження відтворення звуку при спробі закриття вікна
+        window.addEventListener("beforeunload", function() {
+            audio.play();
+        });
+    </script>
+
+</body>
+</html>
