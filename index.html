@@ -10,12 +10,13 @@
             color: white;
             font-family: Arial, sans-serif;
             display: flex;
-            justify-content: center;
+            justify-content: flex-start; /* Вирівнювання елементів по верху */
             align-items: center;
             height: 100vh;
             margin: 0;
             flex-direction: column;
             text-align: center;
+            padding-top: 50px; /* Додаємо відступ з верхньої частини */
         }
         .error {
             font-size: 100px;
@@ -56,6 +57,20 @@
             color: white;
             margin-bottom: 20px;
         }
+        .links-container {
+            margin-top: 20px;
+            display: none; /* Спочатку лінки не видимі */
+        }
+        .links-container a {
+            color: white;
+            background-color: #333;
+            padding: 10px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 5px;
+            display: inline-block;
+            font-size: 18px;
+        }
     </style>
 </head>
 <body>
@@ -73,6 +88,12 @@
     <!-- Звук -->
     <audio class="audio" id="audio" src="sound.mp3" loop autoplay></audio>
 
+    <!-- Контейнер для лінків -->
+    <div class="links-container">
+        <a href="https://t.me/mem_soundtag" target="_blank">Telegram канал</a>
+        <a href="https://tiktok.com/@mem.tag" target="_blank">TikTok</a>
+    </div>
+
     <script>
         let errorElement = document.getElementById('error-message');
         let errorText = document.getElementById('error-text');
@@ -80,6 +101,7 @@
         let muteButton = document.querySelector('.mute-button');
         let audio = document.getElementById('audio');
         let isMuted = false;
+        let linksContainer = document.querySelector('.links-container');
 
         // Визначення мови користувача
         const userLang = navigator.language || navigator.userLanguage;
@@ -110,6 +132,9 @@
 
             // Показати кнопку Mute після натискання
             muteButton.style.display = 'block';
+
+            // Показати лінки на канали після натискання
+            linksContainer.style.display = 'block';
         });
 
         // Функція для кнопки Mute (не робоча, для краси)
