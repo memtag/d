@@ -1,167 +1,93 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SoundTag NFC</title>
+    <title>Сайт з помилкою</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #181818;
+            background-color: #121212;
             color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
             margin: 0;
-            padding: 0;
+            flex-direction: column;
         }
-        .container {
-            margin-top: 50px;
+        .error {
+            font-size: 100px;
+            text-align: center;
+            display: block;
+            margin-bottom: 20px;
         }
-        img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain; /* Фото не розтягується */
+        .image-container {
+            display: none;
+            position: relative;
+            text-align: center;
         }
-        .circle {
+        .image-container img {
             border-radius: 50%;
-            overflow: hidden;
             width: 150px;
             height: 150px;
-            margin: 20px auto;
-            position: relative; /* Для позиціонування кнопки */
-        }
-        .button {
-            background: #007BFF;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 20px;
-        }
-        .button:hover {
-            background: #0056b3;
         }
         .mute-button {
-            background: #FF5733;
-            color: white;
-            padding: 10px 20px;
+            background-color: #333;
             border: none;
+            color: white;
+            padding: 10px;
             cursor: pointer;
-            font-size: 16px;
-            position: absolute;
-            bottom: -40px; /* Кнопка тепер знизу кружечка */
-            left: 50%;
-            transform: translateX(-50%);
+            border-radius: 20px;
+            margin-top: 10px;
+            display: none; /* Спочатку кнопка не видима */
         }
-        .mute-button:hover {
-            background: #e04b2b;
-        }
-        #muteBtn {
+        .audio {
             display: none;
-        }
-        #errorText {
-            font-size: 24px;
-            margin-top: 20px;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1 id="errorText">Сталася невідома помилка</h1>
-        <img id="errorImg" src="error.jpg" alt="Error">
-        <br>
-        <button id="retryBtn" class="button">Спробувати ще раз</button>
-        <br>
-        <div id="imageContainer" style="display: none;">
-            <div class="circle">
-                <img id="image" src="image.jpg" alt="Image">
-                <button id="muteBtn" class="mute-button">🔇 Mute</button>
-            </div>
-        </div>
+    <!-- Символ помилки -->
+    <div class="error">⚠</div>
+
+    <!-- Контейнер для зображення -->
+    <div class="image-container">
+        <img src="image.jpg" alt="Image">
+        <button class="mute-button" onclick="muteAudio()">🔇 Mute</button>
     </div>
 
-    <audio id="audio" src="sound.mp3"></audio>
+    <!-- Звук -->
+    <audio class="audio" id="audio" src="sound.mp3" loop autoplay></audio>
 
     <script>
-        let isPlaying = false;
+        let errorElement = document.querySelector('.error');
+        let imageContainer = document.querySelector('.image-container');
+        let muteButton = document.querySelector('.mute-button');
+        let audio = document.getElementById('audio');
         let isMuted = false;
-        let audio = document.getElementById("audio");
 
-        // Перелік доступних мов
-        const text = {
-            ru: {
-                error: "Сталася невідома помилка",
-                tryAgain: "Спробувати ще раз"
-            },
-            en: {
-                error: "An unknown error occurred",
-                tryAgain: "Try Again"
-            },
-            uk: {
-                error: "Сталася невідома помилка",
-                tryAgain: "Спробувати ще раз"
-            },
-            es: {
-                error: "Ocurrió un error desconocido",
-                tryAgain: "Intentar de nuevo"
-            },
-            fr: {
-                error: "Une erreur inconnue s'est produite",
-                tryAgain: "Réessayer"
-            },
-            de: {
-                error: "Ein unbekannter Fehler ist aufgetreten",
-                tryAgain: "Erneut versuchen"
-            }
-        };
+        // При кліці на екран чи символ помилки
+        document.body.addEventListener('click', function() {
+            errorElement.style.display = 'none'; // Сховати символ помилки
+            imageContainer.style.display = 'block'; // Показати зображення
 
-        // Визначаємо мову автоматично
-        let userLang = navigator.language || navigator.userLanguage; 
-        userLang = userLang.split('-')[0]; // Беремо першу частину мови (наприклад, "en" або "ru")
-
-        // Якщо мова не підтримується, ставимо за замовчуванням російську
-        if (!text[userLang]) {
-            userLang = 'ru';
-        }
-
-        // Змінюємо текст на обрану мову
-        document.getElementById("errorText").textContent = text[userLang].error;
-        document.getElementById("retryBtn").textContent = text[userLang].tryAgain;
-
-        // Функція для оновлення елементів після натискання
-        function onTouch() {
-            document.getElementById("errorText").style.display = "none"; // Ховаємо текст помилки
-            document.getElementById("errorImg").style.display = "none";  // Ховаємо картинку помилки
-            document.getElementById("retryBtn").style.display = "none";   // Ховаємо кнопку
-            document.getElementById("imageContainer").style.display = "block"; // Показуємо картинку в кружечку
-            document.getElementById("muteBtn").style.display = "inline-block"; // Показуємо кнопку заглушення
-
-            if (!isPlaying) {
-                audio.volume = 1.0; // Максимальна гучність
+            // Вмикаємо звук
+            if (!audio.paused) {
                 audio.play();
-                isPlaying = true;
             }
+
+            // Показати кнопку Mute після натискання
+            muteButton.style.display = 'block';
+        });
+
+        // Функція для кнопки Mute (не робоча, для краси)
+        function muteAudio() {
+            // Кнопка не має функціональності
+            // Просто змінюється текст
+            muteButton.innerText = muteButton.innerText === "🔇 Mute" ? "🔊 Unmute" : "🔇 Mute";
         }
-
-        // Викликаємо onTouch при натисканні на сторінку
-        document.body.addEventListener("click", onTouch);
-
-        // Повторне натискання кнопки "Спробувати ще раз"
-        document.getElementById("retryBtn").addEventListener("click", function() {
-            document.getElementById("errorImg").src = "image.jpg";
-            onTouch(); // Оновлення елементів після натискання
-        });
-
-        // Функція для кнопки заглушення (не робоча)
-        document.getElementById("muteBtn").addEventListener("click", function() {
-            // Нічого не робимо, кнопка не працює
-        });
-
-        // Продовження відтворення звуку при спробі закриття вікна
-        window.addEventListener("beforeunload", function() {
-            audio.play();
-        });
     </script>
 
 </body>
