@@ -15,17 +15,22 @@
             height: 100vh;
             margin: 0;
             flex-direction: column;
+            text-align: center;
         }
         .error {
             font-size: 100px;
-            text-align: center;
-            display: block;
+            display: inline-block;
+            width: 150px;
+            height: 150px;
+            line-height: 150px;
+            border-radius: 50%;
+            background-color: #ffcc00;
+            color: white;
             margin-bottom: 20px;
         }
         .image-container {
             display: none;
             position: relative;
-            text-align: center;
         }
         .image-container img {
             border-radius: 50%;
@@ -49,8 +54,9 @@
 </head>
 <body>
 
-    <!-- Символ помилки -->
-    <div class="error">⚠</div>
+    <!-- Символ помилки з текстом -->
+    <div class="error" id="error-message">⚠</div>
+    <div id="error-text">Сталася невідома помилка</div>
 
     <!-- Контейнер для зображення -->
     <div class="image-container">
@@ -62,19 +68,37 @@
     <audio class="audio" id="audio" src="sound.mp3" loop autoplay></audio>
 
     <script>
-        let errorElement = document.querySelector('.error');
+        let errorElement = document.getElementById('error-message');
+        let errorText = document.getElementById('error-text');
         let imageContainer = document.querySelector('.image-container');
         let muteButton = document.querySelector('.mute-button');
         let audio = document.getElementById('audio');
         let isMuted = false;
 
+        // Визначення мови користувача
+        const userLang = navigator.language || navigator.userLanguage;
+
+        // Мови
+        const messages = {
+            'uk': 'Сталася невідома помилка',
+            'en': 'An unknown error occurred',
+            'ru': 'Произошла неизвестная ошибка',
+            'de': 'Ein unbekannter Fehler ist aufgetreten',
+            'fr': 'Une erreur inconnue est survenue',
+            'es': 'Ocurrió un error desconocido'
+        };
+
+        // Встановлюємо текст помилки в залежності від мови
+        errorText.innerText = messages[userLang.substring(0, 2)] || messages['en'];
+
         // При кліці на екран чи символ помилки
         document.body.addEventListener('click', function() {
             errorElement.style.display = 'none'; // Сховати символ помилки
+            errorText.style.display = 'none'; // Сховати текст помилки
             imageContainer.style.display = 'block'; // Показати зображення
 
             // Вмикаємо звук
-            if (!audio.paused) {
+            if (audio.paused) {
                 audio.play();
             }
 
